@@ -11,7 +11,6 @@ exports.sendEmail = async (req, res) => {
 
         // Guardar el correo en la base de datos
         await email.save();
-
         // Estructura HTML del correo con un banner de publicidad
         const htmlMessage = `
            <html>
@@ -30,23 +29,10 @@ exports.sendEmail = async (req, res) => {
     </style>
 </head>
 <body>
-    <h1>¡Bienvenido a la ESCUELA MILITAR DE INGENIERIA !</h1>
-    <h4>PROMOCION nuestras últimas ofertas de carreras:</h4>
+    <h1>¡SISTEMA API REST!</h1>
+    <h4>DEMO:</h4>
 
-    <div class="center">
-        <h2>Ingeniería Civil</h2>
-        <img src="https://lapaz.emi.edu.bo/images/2022/CARRERAS/civil/civil.jpg" alt="Carrera de Ingeniería Civil" class="banner">
-        <p>¡Conviértete en un experto en la construcción y diseño de infraestructura!</p>
-    </div>
-
-    <div class="center">
-        <h2>Telecomunicaciones</h2>
-        <img src="https://lapaz.emi.edu.bo/images/2022/CARRERAS/telecomunicaciones/mesa-de-trabajo-10-80.jpg" alt="Carrera de Telecomunicaciones" class="banner">
-        <p>¡Explora las tecnologías de comunicación más avanzadas y cambia el mundo!</p>
-    </div>
-
-    <p>¡No te pierdas esta oportunidad de estudiar carreras emocionantes y con gran demanda en el mercado laboral!</p>
-</body>
+   </body>
 </html>
 
         `;

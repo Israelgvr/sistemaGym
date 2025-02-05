@@ -1,34 +1,31 @@
 const jwt = require('jsonwebtoken');
-const User = require("../models/user");
-const ErrorResponse = require('../utils/errorResponse');
+const JWT_SECRET = process.env.JWT_SECRET || 'secret123';
 
-
-// verfiva si el usuario esta autentificado
-exports.isAuthenticated = async (req, res, next) =>{
-
-    const {token} = req.cookies;
-
-    // el token de inicio de sesion debe existir
-    if (!token){
-        return next (new ErrorResponse('Debes iniciar sesión para acceder.', 401));
-    }
-
+// Verificar si el usuario está autenticado
+exports.isAuthenticated = (req, res, next) => {
+    const token = req.headers.authorization && req.headers.authorization.split(" ")[1];
+    if (!token) return res.status(401).json({ message: 'No se proporcionó token de autenticación' });
     try {
-        //verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id);
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded; // { id, correo, roleName }
         next();
-
-    } catch (error) {
-        return next (new ErrorResponse('Debes iniciar sesión para acceder', 401));
+    } catch (err) {
+        res.status(401).json({ message: 'Token inválido' });
     }
-}
+};
 
-// admin middleware
-exports.isAdmin = (req, res, next) =>{
-    if (req.user.role === 1){
-        return next (new ErrorResponse('Acceso denegado, debes ser administrador', 401));
+// Solo para Administradores
+exports.isAdmin = (req, res, next) => {
+    if (req.user && req.user.roleName === 'Administrador') {
+        return next();
     }
-    next();
+    res.status(403).json({ message: 'Acceso denegado. Se requiere rol Administrador' });
+};
 
-}
+// Para Administradores e Instructores
+exports.isAdminOrInstructor = (req, res, next) => {
+    if (req.user && (req.user.roleName === 'Administrador' || req.user.roleName === 'Instructor')) {
+        return next();
+    }
+    res.status(403).json({ message: 'Acceso denegado. Se requiere rol Administrador o Instructor' });
+};
