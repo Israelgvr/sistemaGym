@@ -28,17 +28,35 @@ exports.signup = async (req, res, next) => {
             return res.status(400).json({ success: false, message: "Usuario ya existe" });
         }
 
-        // Generate a password
+        // Generar una contraseña
         const generatedPassword = generatePassword();
 
-        // Save user with generated password
+        // Guardar usuario con contraseña generada
         const user = await User.create({ ...req.body, password: generatedPassword });
 
+        // Configuración del correo a enviar
+        const mailOptions = {
+            from: '"Tu Sistema de Gestión" <crm61096@gmail.com>', // Remitente
+            to: email, // Destinatario
+            subject: "¡Registro exitoso en el sistema!",
+            html: `
+                <h1>¡Bienvenido al Sistema!</h1>
+                <p>Hola, ${user.nombre || "Usuario"}:</p>
+                <p>Te has registrado correctamente en nuestro sistema.</p>
+                <p>Por favor, inicia sesión para completar tu perfil.</p>
+                <br>
+                <p>Saludos,</p>
+                <p>Equipo de Soporte</p>
+            `,
+        };
+
+        // Enviar el correo
+        await transporter.sendMail(mailOptions);
 
         res.status(201).json({
             success: true,
+            message: "Usuario registrado y correo enviado correctamente.",
             user,
-          
         });
     } catch (error) {
         console.error(error);

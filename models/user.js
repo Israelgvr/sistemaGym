@@ -1,117 +1,57 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const jwt = require("jsonwebtoken");
 
-const userSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
+    nombres: { type: String, required: true },
+    apellidoPa: { type: String, required: true },
+    apellidoMa: { type: String, required: true },
+    fechaNacimiento: { type: Date, required: true },
+    genero: { type: String, enum: ['Masculino', 'Femenino', 'Otro'], required: true },
+    direccion: { type: String, required: true },
 
-   nombre: {
-       type: String,
-       trim: true,
-       required : [true, 'Por favor ingrese su nombre completo'],
-       maxlength: 32
-   },
-    apellidoPa: {
-        type: String,
-        trim: true,
-        required : [true, 'Por favor ingrese su apellido completo'],
-        maxlength: 32
-    },
-    apellidoMa: {
-        type: String,
-        trim: true,
-        required : [true, 'Por favor ingrese su apellido completo'],
-        maxlength: 32
-    },
+    rol: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', default: null },
 
-    sexo: {
-        type: String,
-        trim: true,
-    },
-    fechaNacimiento: {
-        type: Date,
-        required: [true, 'Por favor ingrese su Fecha de Nacimiento']
-    },
-    direccion: {
-        type: String,
-        trim: true
-    },
-    telefono: {
-        type: String,
-        trim: true
-    },
 
-   email: {
-       type: String,
-       trim: true,
-       unique: true,
-       match: [
-           /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-           'Por favor, ingrese un correo válido'
-       ]
-
-   },
-
-    password: {
-        type: String,
-        required: [true, 'La contraseña es obligatoria'],
-        minlength: 6, // Adjust as needed
-        select: false // Exclude password from query results by default
-    },
-    resetPasswordToken: String,
-    resetPasswordExpire: Date,
-
-    role: {
-        type: Number,
-        default: 0,
-
-    },
+    correo: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
-
-
-
-}, {timestamps: true});
-
-
-
-
-// cifrar la contraseña antes de guardar
-userSchema.pre('save', async function(next){
-
-
-    if(!this.isModified('password')){
-        next()
-    }
-    this.password = await bcrypt.hash(this.password, 10);
+}, {
+    toJSON: { virtuals: true }, // Incluye virtuales al convertir a JSON
+    toObject: { virtuals: true } // Incluye virtuales al convertir a objeto
 });
 
+// Virtual para calcular la edad
+UserSchema.virtual('edad').get(function() {
+    const hoy = new Date();
+    const nacimiento = this.fechaNacimiento;
 
+    if (!nacimiento) return undefined; // Si no hay fecha, retorna undefined
 
-// verifica la contarsena
-userSchema.methods.comparePassword = async function(yourPassword){
-    return await bcrypt.compare(yourPassword, this.password);
-}
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
 
-// obtine el token
-userSchema.methods.jwtGenerateToken = function(){
-    return jwt.sign({id: this.id}, process.env.JWT_SECRET, {
-        expiresIn: 3600
-    });
-}
-
-// Campo virtual para calcular la edad
-userSchema.virtual('edad').get(function () {
-    const today = new Date();
-    const birthDate = new Date(this.fechaNacimiento);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
+    // Ajustar si el cumpleaños aún no ha ocurrido este año
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+        edad--;
     }
-    return age;
+
+    return edad;
 });
 
-// Habilitar el campo virtual en JSON y objetos
-userSchema.set('toJSON', { virtuals: true });
-userSchema.set('toObject', { virtuals: true });
+// Resto del código (pre-save y comparePassword)...
+UserSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) return next();
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
 
-module.exports = mongoose.model("Usuario", userSchema);
+UserSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
+
+module.exports = mongoose.model('User', UserSchema);

@@ -10,7 +10,10 @@ const errorHandler = require('./middleware/error');
 
 
 //IMPORT ROUTES
-const authRoutes = require('./routes/auth');
+//const authRoutes = require('./routes/auth');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const roleRoutes = require('./routes/roleRoutes');
 
 
 
@@ -38,6 +41,8 @@ app.use(cors());
 
 // ROUTES MIDDLEWARE
 app.use("/api", authRoutes)
+app.use('/api', userRoutes);
+app.use('/api', roleRoutes);
 
 //app.use("/api", carrerasRouter)
 
