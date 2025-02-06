@@ -30,26 +30,31 @@ exports.login = async (req, res) => {
 };
 
 // Función para solicitar recuperación de contraseña (Forgot Password)
+
 exports.forgotPassword = async (req, res) => {
     try {
         const { correo } = req.body;
         const user = await User.findOne({ correo });
-        if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
 
-        // Generar token de reseteo (válido por 15 minutos)
-        const resetToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '15m' });
+        // Generar token de 8 caracteres
+        const resetToken = crypto.randomBytes(4).toString('hex'); // 4 bytes => 8 caracteres en hexadecimal
 
-        // Construir la URL de reseteo (modifícala según tu dominio o lógica de la app)
-        const resetUrl = `${resetToken}`;
+        // Guardar el token y su fecha de expiración (15 minutos)
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 minutos en milisegundos
+        await user.save();
 
         // Configurar las opciones del correo
         const mailOptions = {
             from: '"Soporte" <crm61096@gmail.com>',
             to: user.correo,
             subject: 'Recuperación de contraseña',
-            text: `Utiliza el siguiente token para cambiar su contrasena: ${resetUrl}`,
-            // Opcional: enviar también HTML
-            // html: `<p>Utiliza el siguiente enlace para restablecer tu contraseña:</p><a href="${resetUrl}">${resetUrl}</a>`
+            text: `Utiliza el siguiente token para cambiar su contraseña: ${resetToken}`
+            // También puedes enviar HTML si lo prefieres:
+            // html: `<p>Utiliza el siguiente token para cambiar su contraseña:</p><h2>${resetToken}</h2>`
         };
 
         // Enviar el correo de recuperación
@@ -57,7 +62,6 @@ exports.forgotPassword = async (req, res) => {
             if (error) {
                 return res.status(500).json({ message: error.message });
             } else {
-                // En un entorno de producción no se recomienda enviar el token en la respuesta
                 return res.json({ message: 'Correo de recuperación enviado.' });
             }
         });
@@ -76,25 +80,21 @@ exports.resetPassword = async (req, res) => {
             return res.status(400).json({ message: 'El token y la nueva contraseña son requeridos.' });
         }
 
-        // Verificar y decodificar el token
-        let decoded;
-        try {
-            decoded = jwt.verify(token, JWT_SECRET);
-        } catch (error) {
-            if (error.name === 'TokenExpiredError') {
-                return res.status(401).json({ message: 'El token ha expirado.' });
-            }
-            return res.status(400).json({ message: 'Token inválido.' });
-        }
+        // Buscar al usuario que tenga el token y que no haya expirado
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
 
-        // Buscar al usuario a través del id contenido en el token
-        const user = await User.findById(decoded.id);
         if (!user) {
-            return res.status(404).json({ message: 'Usuario no encontrado.' });
+            return res.status(400).json({ message: 'Token inválido o ha expirado.' });
         }
 
-        // Actualizar la contraseña del usuario (el modelo se encargará de encriptarla)
+        // Actualizar la contraseña del usuario (el hook pre-save en el modelo se encargará de encriptarla)
         user.password = newPassword;
+        // Limpiar los campos del token una vez utilizado
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
         await user.save();
 
         // Enviar correo de confirmación de cambio de contraseña

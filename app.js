@@ -14,7 +14,7 @@ const errorHandler = require('./middleware/error');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const roleRoutes = require('./routes/roleRoutes');
-
+const enrollmentRoutes = require('./routes/enrollmentRoutes');
 
 
 
@@ -43,6 +43,7 @@ app.use(cors());
 app.use("/api", authRoutes)
 app.use('/api', userRoutes);
 app.use('/api', roleRoutes);
+app.use('/api', enrollmentRoutes);
 
 //app.use("/api", carrerasRouter)
 
