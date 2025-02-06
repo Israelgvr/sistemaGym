@@ -14,7 +14,9 @@ const UserSchema = new mongoose.Schema({
 
     correo: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date }
 }, {
     toJSON: { virtuals: true }, // Incluye virtuales al convertir a JSON
     toObject: { virtuals: true } // Incluye virtuales al convertir a objeto
@@ -54,4 +56,4 @@ UserSchema.methods.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.models.User || mongoose.model('User', UserSchema);
