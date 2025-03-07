@@ -53,7 +53,7 @@ app.use('/api', enrollmentRoutes);
 //ERROR MIDDLEWARE
  app.use(errorHandler);
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 3000;
 
 
 app.listen(port, ()=>{
