@@ -15,6 +15,12 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 const enrollmentRoutes = require('./routes/enrollmentRoutes');
+const progressRoutes = require('./routes/progressRoutes');
+
+// ...otras importaciones y configuraciones
+const mealPlanRoutes = require('./routes/mealPlanRoutes');
+
+
 
 
 
@@ -44,8 +50,9 @@ app.use("/api", authRoutes)
 app.use('/api', userRoutes);
 app.use('/api', roleRoutes);
 app.use('/api', enrollmentRoutes);
+app.use('/api', progressRoutes);
+app.use('/api', mealPlanRoutes);
 
-//app.use("/api", carrerasRouter)
 
 
 
