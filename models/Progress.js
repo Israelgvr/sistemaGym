@@ -15,16 +15,16 @@ const ProgressSchema = new mongoose.Schema({
         required: true
     },
     activityLevels: {
-        type: [String],
-        default: []
+        type: String,
+        required: true
     },
     date: {
         type: Date,
-        required: true
+        default: Date.now //se cambio
     },
     objectives: {
-        type: [String],
-        default: []
+        type: String,
+        required: true
     },
     imc: {
         type: Number

@@ -18,8 +18,8 @@ const UserSchema = new mongoose.Schema({
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date }
 }, {
-    toJSON: { virtuals: true }, // Incluye virtuales al convertir a JSON
-    toObject: { virtuals: true } // Incluye virtuales al convertir a objeto
+    toJSON: { virtuals: true }, // Incluye virtuales
+    toObject: { virtuals: true } // Incluye virtuales
 });
 
 // Virtual para calcular la edad
@@ -27,12 +27,13 @@ UserSchema.virtual('edad').get(function() {
     const hoy = new Date();
     const nacimiento = this.fechaNacimiento;
 
-    if (!nacimiento) return undefined; // Si no hay fecha, retorna undefined
+    if (!nacimiento) return undefined;
+    // Si no hay fecha
 
     let edad = hoy.getFullYear() - nacimiento.getFullYear();
     const mes = hoy.getMonth() - nacimiento.getMonth();
 
-    // Ajustar si el cumpleaños aún no ha ocurrido este año
+    // Ajustar si el cumpleaños
     if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
         edad--;
     }
