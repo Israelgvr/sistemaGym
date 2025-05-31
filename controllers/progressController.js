@@ -108,7 +108,6 @@ exports.deleteProgress = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
 // Dashboard: Datos para gráfica de línea (ejemplo: evolución de peso e IMC en el tiempo)
 exports.getLineChartData = async (req, res) => {
     try {
@@ -129,7 +128,6 @@ exports.getLineChartData = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
 // Dashboard: Datos para gráfica de torta (ejemplo: distribución de objetivos)
 exports.getPieChartData = async (req, res) => {
     try {
