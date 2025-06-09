@@ -17,6 +17,7 @@ router.post('/mealplans', isAuthenticated, createMealPlan);
 
 // Listar planes de alimentación
 router.get('/mealplans', isAuthenticated, getMealPlans);
+
 router.get('/mealplans/:id', isAuthenticated, getMealPlansByStudentId);
 
 

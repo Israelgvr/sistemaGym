@@ -19,7 +19,8 @@ const progressRoutes = require('./routes/progressRoutes');
 
 // ...otras importaciones y configuraciones
 const mealPlanRoutes = require('./routes/mealPlanRoutes');
-
+const routineRoutes = require('./routes/routineTemplateRoutes');
+const asigroutineRoutes = require('./routes/assignedRoutineRoutes');
 
 
 
@@ -52,7 +53,8 @@ app.use('/api', roleRoutes);
 app.use('/api', enrollmentRoutes);
 app.use('/api', progressRoutes);
 app.use('/api', mealPlanRoutes);
-
+app.use('/api', routineRoutes);
+app.use('/api',asigroutineRoutes );
 
 
 
